@@ -10,7 +10,7 @@ This repository implements **system identification** and **Model Predictive Cont
 ├── gem_data_log.csv                     # Logged data for system ID
 ├── wps.csv                              # Path waypoints
 ├── cross_track_error.csv               # Logged CTE over time
-├── residual_output/
+├── residual_model_output/
 │   ├── cross_track_error.png           # Plot of CTE
 │   ├── residual_training_loss.png      # Training/validation loss plot
 │   ├── input_output_comparison.png     # Model vs ground-truth comparison
@@ -52,11 +52,11 @@ roslaunch gem_gazebo gem_gazebo_rviz.launch
 
 ### 📉 Residual Model Loss
 
-![Training Loss](residual_model_output/residual_training_loss.png)
+![Training Loss](gem_mpc_system_id/scripts/residual_model_output/residual_training_loss.png)
 
 ### 📈 Input vs Output (Residuals)
 
-![Input Output Comparison](residual_model_output/input_output_comparison.png)
+![Input Output Comparison](gem_mpc_system_id/scripts/residual_model_output/input_output_comparison.png)
 
 ### ✅ RMSE
 
@@ -92,7 +92,7 @@ This ensures that you can see the planned trajectory in simulation and verify tr
 
 ### ✅ Cross-Track Error Plot
 
-![CTE](residual_model_output/cross_track_error.png)
+![CTE](gem_mpc_system_id/scripts/cross_track_error.png)
 
 - Initial oscillations are observed due to limited training data and model uncertainty.
 - However, the controller quickly stabilizes and maintains cross-track error close to **zero** for the rest of the trajectory.
@@ -160,25 +160,25 @@ Assignment - Ground Vehicles Navigation (GROUND_ARRC), Summer 2025.
 
 ---
 
-### 📄 `residual_output/residual_training_loss.png`
+### 📄 `residual_model_output/residual_training_loss.png`
 - Visualization of training and validation loss over epochs.
 - Shows convergence and generalization of the residual model.
 
 ---
 
-### 📄 `residual_output/input_output_comparison.png`
+### 📄 `residual_model_output/input_output_comparison.png`
 - Compares true vs predicted values of residuals on a test dataset.
 - For `dx`, `dy`, `dyaw` separately.
 
 ---
 
-### 📄 `residual_output/cross_track_error.png`
+### 📄 `residual_model_output/cross_track_error.png`
 - Shows Cross-Track Error (CTE) over time during MPC execution.
 - Indicates how closely the vehicle followed the path.
 
 ---
 
-### 📄 `residual_output/residual_model_traced.pt`
+### 📄 `residual_model_output/residual_model_traced.pt`
 - TorchScript-traced model for real-time deployment.
 - Used by `mpc_controller_node.py` for predictions.
 
