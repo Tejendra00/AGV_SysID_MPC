@@ -52,11 +52,11 @@ roslaunch gem_gazebo gem_gazebo_rviz.launch
 
 ### 📉 Residual Model Loss
 
-![Training Loss](residual_output/residual_training_loss.png)
+![Training Loss](residual_model_output/residual_training_loss.png)
 
 ### 📈 Input vs Output (Residuals)
 
-![Input Output Comparison](residual_output/input_output_comparison.png)
+![Input Output Comparison](residual_model_output/input_output_comparison.png)
 
 ### ✅ RMSE
 
@@ -92,7 +92,7 @@ This ensures that you can see the planned trajectory in simulation and verify tr
 
 ### ✅ Cross-Track Error Plot
 
-![CTE](residual_output/cross_track_error.png)
+![CTE](residual_model_output/cross_track_error.png)
 
 - Initial oscillations are observed due to limited training data and model uncertainty.
 - However, the controller quickly stabilizes and maintains cross-track error close to **zero** for the rest of the trajectory.
