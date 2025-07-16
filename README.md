@@ -42,7 +42,6 @@ catkin_make
 ```bash
 source devel/setup.bash
 roslaunch gem_gazebo gem_gazebo_rviz.launch
-rosrun gem_mpc_system_id spawn_path_markers.py 
 rosrun gem_mpc_system_id mpc_controller_node.py 
 
 ```
@@ -77,7 +76,7 @@ rosrun gem_mpc_system_id mpc_controller_node.py
 ## 🛣 Step 3: Path Input via CSV
 
 - The `wps.csv` file contains the trajectory.
-- To visualize it in Gazebo and RViz, use `spawn_path_markers.py` which spawns visual markers at each waypoint.
+- To visualize it in Gazebo and RViz, use `spawn_path_markers.py` which spawns visual markers at each waypoint. *But you have to add markers in gazebo to run this 
 
 ```bash
 rosrun gem_mpc_system_id spawn_path_markers.py
