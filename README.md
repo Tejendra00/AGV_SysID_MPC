@@ -28,41 +28,40 @@ This repository implements **system identification** and **Model Predictive Cont
 ### 1. Clone and Build the POLARIS_GEM_e2 Simulator
 
 ```bash
+mkdir -p ~/gem_ws/src
 cd ~/gem_ws/src
 git clone https://gitlab.engr.illinois.edu/gemillins/POLARIS_GEM_e2.git
+git clone https://github.com/Tejendra00/AGV_SysID_MPC.git
+source /opt/ros/noetic/setup.bash
 cd ~/gem_ws
-rosdep install --from-paths src --ignore-src -r -y
-catkin build
-source devel/setup.bash
+catkin_make
 ```
 
 ### 2. Launch the Simulator
 
 ```bash
+source devel/setup.bash
 roslaunch gem_gazebo gem_gazebo_rviz.launch
+rosrun gem_mpc_system_id spawn_path_markers.py 
+rosrun gem_mpc_system_id mpc_controller_node.py 
+
 ```
 
 ---
 
 ## 🧠 Step 1: System Identification
 
-- Data was logged using `logger_node.py` with a limited dataset.
-- We trained a residual model using `residual_model_trainer.py` to correct the kinematic model outputs (`dx`, `dy`, `dyaw`).
+- Data was logged using `logger_node.py` with a limited dataset by running the car in Pure Pursuit but with varible speed .
+- I trained a residual model using `residual_model_trainer.py` to correct the kinematic model outputs (`dx`, `dy`, `dyaw`).
 - Despite the small dataset, the model captured the residuals with good accuracy.
 
-### 📉 Residual Model Loss
+### 📉 RMSE
 
-![Training Loss](gem_mpc_system_id/scripts/residual_model_output/residual_training_loss.png)
+![Training Loss](gem_mpc_system_id/scripts/residual_model_output/residual_rmse_plot.png)
 
 ### 📈 Input vs Output (Residuals)
 
 ![Input Output Comparison](gem_mpc_system_id/scripts/residual_model_output/input_output_comparison.png)
-
-### ✅ RMSE
-
-```txt
-Test RMSE (dx, dy, dyaw): [0.00429 m, 0.00321 m, 0.00080 rad]
-```
 
 ---
 
@@ -81,7 +80,7 @@ Test RMSE (dx, dy, dyaw): [0.00429 m, 0.00321 m, 0.00080 rad]
 - To visualize it in Gazebo and RViz, use `spawn_path_markers.py` which spawns visual markers at each waypoint.
 
 ```bash
-rosrun <your_package> spawn_path_markers.py
+rosrun gem_mpc_system_id spawn_path_markers.py
 ```
 
 This ensures that you can see the planned trajectory in simulation and verify tracking visually.
@@ -100,106 +99,10 @@ This ensures that you can see the planned trajectory in simulation and verify tr
 
 ---
 
-## 📽 Demonstration Expectations
-
-1. Start Gazebo and RViz:
-   ```bash
-   roslaunch gem_gazebo gem_gazebo_rviz.launch
-   ```
-
-2. Run:
-   ```bash
-   rosrun <your_package> logger_node.py
-   rosrun <your_package> spawn_path_markers.py
-   rosrun <your_package> mpc_controller_node.py
-   ```
-
-3. Show simulation in RViz and Gazebo with live tracking.
-4. End with plots of:
-   - RMSE from system identification
-   - Cross-track error
-
----
-
-## 🙌 Acknowledgments
-
-Assignment - Ground Vehicles Navigation (GROUND_ARRC), Summer 2025.
-
----
-
-## 🗂 File Descriptions
-
-### 📄 `gem_data_log.csv`
-- Logged using `logger_node.py` during simulation.
-- Records:
-  - Vehicle state: `odom_x`, `odom_y`, `odom_yaw`
-  - Control inputs: `speed`, `steering_angle`
-  - Timestamp and time delta
-- Used as the dataset for system identification.
-
----
-
-### 📄 `logger_node.py`
-- A ROS node that subscribes to `/odom` and `/ackermann_cmd`.
-- Logs timestamped vehicle state and control inputs.
-- Saves data to `gem_data_log.csv` for training the residual model.
-
----
-
-### 📄 `residual_model_trainer.py`
-- Loads `gem_data_log.csv` and prepares data samples:
-  - Input: current state and control
-  - Output: residual between predicted and next state
-- Uses a PyTorch neural network to learn the residual model.
-- Trains a model to predict:
-  - `dx = x_next - x_model`
-  - `dy = y_next - y_model`
-  - `dyaw = yaw_next - yaw_model`
-- Saves trained model as TorchScript (`residual_model_traced.pt`)
-- Plots training vs validation loss.
-
----
-
-### 📄 `residual_model_output/residual_training_loss.png`
-- Visualization of training and validation loss over epochs.
-- Shows convergence and generalization of the residual model.
-
----
-
-### 📄 `residual_model_output/input_output_comparison.png`
-- Compares true vs predicted values of residuals on a test dataset.
-- For `dx`, `dy`, `dyaw` separately.
-
----
-
-### 📄 `residual_model_output/cross_track_error.png`
-- Shows Cross-Track Error (CTE) over time during MPC execution.
-- Indicates how closely the vehicle followed the path.
-
----
-
-### 📄 `residual_model_output/residual_model_traced.pt`
-- TorchScript-traced model for real-time deployment.
-- Used by `mpc_controller_node.py` for predictions.
-
----
-
-### 📄 `spawn_path_markers.py`
-- Reads waypoints from `wps.csv` and publishes them as markers in RViz.
-- Allows visualization of the path the vehicle should follow.
-
----
-
-### 📄 `wps.csv`
-- Contains waypoints in the format: `[x, y, yaw]`
-- Used as the reference path for MPC tracking.
-
----
-
 ## 🔍 System Identification Process
 
 1. **Data Collection**: 
-   - Run simulation with manual/random input and log data via `logger_node.py`.
+   - Run simulation with pure pursuit and log data via `logger_node.py`.
 
 2. **Kinematic Prediction**:
    - Compute basic bicycle model prediction using known vehicle dynamics.
@@ -234,3 +137,55 @@ Assignment - Ground Vehicles Navigation (GROUND_ARRC), Summer 2025.
 ---
 
 
+## 🗂 File Descriptions
+
+### 📄 `gem_data_log.csv`
+- Logged using `logger_node.py` during simulation.
+- Records:
+  - Vehicle state: `odom_x`, `odom_y`, `odom_yaw`
+  - Control inputs: `speed`, `steering_angle`
+  - Timestamp and time delta
+- Used as the dataset for system identification.
+
+---
+
+### 📄 `logger_node.py`
+- A ROS node that subscribes to `/odom` and `/ackermann_cmd`.
+- Logs timestamped vehicle state and control inputs.
+- Saves data to `gem_data_log.csv` for training the residual model.
+
+---
+
+### 📄 `residual_model_trainer.py`
+- Loads `gem_data_log.csv` and prepares data samples:
+  - Input: current state and control
+  - Output: residual between predicted and next state
+- Uses a PyTorch neural network to learn the residual model.
+- Trains a model to predict:
+  - `dx = x_next - x_model`
+  - `dy = y_next - y_model`
+  - `dyaw = yaw_next - yaw_model`
+- Saves trained model as TorchScript (`residual_model_traced.pt`)
+- Plots training vs validation loss.
+
+---
+
+### 📄 `residual_model_output/residual_model_traced.pt`
+- TorchScript-traced model for real-time deployment.
+- Used by `mpc_controller_node.py` for predictions.
+
+
+
+### 📄 `spawn_path_markers.py`
+- Reads waypoints from `wps.csv` and publishes them as markers in RViz.
+- Allows visualization of the path the vehicle should follow.
+
+---
+
+## 🙌 Acknowledgments
+
+Thanks to Ahmad Amine from University of Pennsylvania - https://arxiv.org/abs/2303.13694.
+
+Have utilized ChatGPT to code and document. 
+
+---
