@@ -96,6 +96,7 @@ This ensures that you can see the planned trajectory in simulation and verify tr
 - Initial oscillations are observed due to limited training data and model uncertainty.
 - However, the controller quickly stabilizes and maintains cross-track error close to **zero** for the rest of the trajectory.
 - Overall, the system satisfies the tracking constraint of staying within ±1 meter CTE.
+- If ran for longer time there is oscillation because the data set was collected only for one lap . If we have more data then more better model and better output can be achieved. 
 
 ---
 
