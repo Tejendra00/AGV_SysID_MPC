@@ -82,6 +82,7 @@ for _ in range(N):
     ubx += [v_max, delta_max]
 
 cte_log = []
+last_delta_cmd = [0.0] 
 last_idx = [0]
 start_time = None
 
@@ -120,9 +121,12 @@ def odom_callback(msg):
     x = msg.pose.pose.position.x
     y = msg.pose.pose.position.y
     yaw = 2 * np.arctan2(msg.pose.pose.orientation.z, msg.pose.pose.orientation.w)
+    v_current = msg.twist.twist.linear.x
+    delta_current = last_delta_cmd[0]
 
     if apply_residual:
-        dx_r, dy_r, dyaw_r = get_residual(x, y, yaw, 0.0, 0.0)
+        # dx_r, dy_r, dyaw_r = get_residual(x, y, yaw, 0.0, 0.0)
+        dx_r, dy_r, dyaw_r = get_residual(x, y, yaw, v_current, delta_current)
         x += 0.2 * np.clip(dx_r, -0.05, 0.05)
         y += 0.2 * np.clip(dy_r, -0.05, 0.05)
         yaw += 0.2 * np.clip(dyaw_r, -0.05, 0.05)
@@ -165,6 +169,8 @@ def odom_callback(msg):
     drive_msg.speed = v_cmd
     drive_msg.steering_angle = delta_cmd
     pub.publish(drive_msg)
+    last_delta_cmd[0] = delta_cmd
+
 
     if len(cte_log) % 50 == 0:
         np.savetxt("cross_track_error.csv", cte_log, delimiter=",")
